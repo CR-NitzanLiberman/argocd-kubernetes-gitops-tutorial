@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jenkins
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    namespace: jenkins
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://charts.jenkins.io
+    chart: jenkins
+    targetRevision: 5.*            # lock to a safe major range
+    helm:
+      values: |
+        controller:
+          admin:
+            user: admin
+            # password: "ChangeMe123!"  # leave commented to generate a random one
+          serviceType: ClusterIP
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+        persistence:
+          enabled: true
+          size: 8Gi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
